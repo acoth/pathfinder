@@ -1,0 +1,23 @@
+<!doctype html>
+<title> Pathfinder Odds Calculator </title>
+<div class=page>
+<div>
+{{svg|safe}}
+<h2>
+    <form method="post">
+        <div>
+            <label for="dieString">Dice:</label>
+            <input type="text" id="dieString" name="dieString" value="{{ curr_die }}">
+        </div>
+        <div>
+            <label for="check">Check:</label>
+            <input type="text" id="check" name="check" value="{{ curr_check }}">
+        </div>
+        <div class="button">
+            <button type="submit">Analyze</button>
+        </div>
+        <div id="msg">{{ msg }}</div>
+    </form>
+</h2>
+</div>
+</div>
