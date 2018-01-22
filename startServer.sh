@@ -1,10 +1,11 @@
 #!/bin/sh
-cd /home/pi/pathfinder/
-
-pgrep -a python | grep serveOdds.py > /dev/null
-if [ $? -eq 0 ]; then
-    echo "Web server is already running."
+which python
+PID1=`pgrep -f serveOdds.py`
+if [ -z "$PID1" ]; then
+    echo "Web server not running"
 else
-    python serveOdds.py 2>flaskLogPath &
+    echo "Web server running; restarting..."
+    kill $PID1
 fi
+python serveOdds.py 2>flaskLog -p $1 &
 

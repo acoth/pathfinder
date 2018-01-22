@@ -23,12 +23,12 @@ def drawGraph(d='3d6',c='9'):
 @app.route('/',methods=['GET','POST'])
 def page():
     
-#    retPage = '<html><head><title>Pathfinder Odds Calculator</title></head>\n<body><img src="%s"></body></html>'%'odds.svg'
     if request.method=='GET':
-        params = ['2d6;1d12',8]
+        params = {'dieStrings':'2d6;1d12','check':8}
     if request.method=='POST':
-        params = [request.form['dieString'].encode('utf8'),request.form['check'].encode('utf8')]
+        params = {'dieStrings':request.form['dieString'].encode('utf8'),
+                  'check':request.form['check'].encode('utf8')}
 #        print params
-    return(render_template('page.html',svg=drawGraph(*params),curr_die=params[0],curr_check=params[1]))
+    return(render_template('page.html',graph=pathfinder.Analyze(**params),curr_die=params['dieStrings'],curr_check=params['check']))
 
 app.run(host='0.0.0.0',port=5001)

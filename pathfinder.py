@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import re, random
+import mpld3
  
 def die(sides):
     return(np.concatenate((np.zeros((1)),np.ones((sides))))/sides)
@@ -71,24 +72,11 @@ def PlotSuccessDist(dieString,axes):
     axes.bar(np.arange(len(cmf)),cmf)
     return
 
-def Analyze(dieStringList, check, figNum=1):
-    dieStringList = dieStringList.split(';')
-    if not isinstance(figNum,int):
-        plt.ioff()
-        fig = plt.figure(1)
-    else:
-        fig = plt.figure(figNum)
-    fig.clear()
-    fig.subplots_adjust(right=1.5)
-    axAr = 2*[0]
-    for k in range(2):
-        axAr[k]=fig.add_subplot(121+k)
-    if not isinstance(dieStringList,(list,tuple)):
-        dieStringList = [dieStringList]
-    cmfs = np.zeros((0,0))
+def Analyze(dieStrings, check):
+    fig,ax = plt.subplots()
+    dieStringList = dieStrings.split(';')
     maxBlessings = 5
     success = np.zeros((maxBlessings+1,0))
-    damage = np.zeros((maxBlessings+1,0))
     cMat = np.mat(check)
     cms = np.shape(cMat)
     dsl = len(dieStringList)
@@ -106,48 +94,19 @@ def Analyze(dieStringList, check, figNum=1):
     checkLegend = list()
     for m in range(dsl):
         dieString = dieStringList[m]
-        cmf = PMFToSuccess(stringToPMF(dieString))
-        oldShape = np.shape(cmfs)
-        thisShape = np.shape(cmf)
-        sizeDiff = thisShape[0]-oldShape[0]
-        if sizeDiff>0:
-            cmfs = np.concatenate((cmfs,np.zeros((sizeDiff,oldShape[1]))),axis=0)
-        if sizeDiff<0:
-            cmf = np.concatenate((cmf,np.zeros((-sizeDiff,1))),axis=0)
-        cmfs = np.concatenate((cmfs,cmf.reshape(len(cmf),1)),axis=1)
         for k in range(cms[0]):
             success = np.concatenate((success,checkVsBlessings(cMat[k,m],dieString,maxBlessings)),axis=1)
-            damage = np.concatenate((damage,damageVsBlessings(cMat[k,m],dieString,maxBlessings)),axis=1)
             checkLegend = checkLegend+[dieString+" vs %d"%cMat[k,m]]
-    axAr[0].plot(np.arange(1,np.shape(cmfs)[0]),cmfs[1:,:]*100,'o-')
-    axAr[0].grid(True)
-    axAr[0].legend(dieStringList,loc=1)
-    axAr[0].set_xlabel('Check')
-    axAr[0].set_ylabel('Chance of Success (%)')
-    axAr[0].set_ybound(lower=0,upper=100)
-    axAr[0].yaxis.set_major_locator(ticker.LinearLocator(11))
-    axAr[0].set_title('Odds for given roll(s)')
-    
+
     blessAr = np.arange(maxBlessings+1)
-    axAr[1].plot(blessAr,success*100,'<-')
-    axAr[1].set_ybound(lower=0,upper=100)
-    axAr[1].yaxis.set_major_locator(ticker.LinearLocator(11))
-    axAr[1].set_xlabel('Number of Blessings')
-    axAr[1].set_ylabel('Chance of Success (%)')
-    axAr[1].grid(True)
-    axAr[1].set_title('Odds with blessings against given check')
- #   axAr[1].legend(dieStringList,loc=(0,))
-    #axAr[1].set_axis_off()
-    a2 = axAr[1].twinx()
-    a2.plot(blessAr,damage,'>-')
-    a2.set_ybound(lower=0,upper=5)
-    a2.yaxis.set_major_locator(ticker.LinearLocator(11))
-    a2.set_ylabel('Expected Damage (for a combat check)')
-    a2.legend(checkLegend,loc='center right')
-    if not isinstance(figNum,int):
-        fig.savefig(figNum, format='svg',bbox_inches='tight')
-        plt.close(fig)
-    return
+    points = ax.plot(blessAr,success*100,'o-')
+    ax.set_ybound(lower=0,upper=100)
+    ax.set_xlabel('Number of Blessings')
+    ax.set_ylabel('Chance of Success (%)')
+    ax.grid(True)
+    ax.set_title('Odds with blessings against given check')
+    ax.legend(checkLegend)
+    return (mpld3.fig_to_html(fig, figid="graph"))
 
 def roll(dieString):
     dieList = stringToDie(dieString)
